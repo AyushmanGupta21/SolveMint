@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useWriteContract, useChainId } from "wagmi";
+import { useWriteContract, useChainId, usePublicClient } from "wagmi";
 import { parseEther } from "viem";
 import { SOLVEMINT_ABI, SOLVEMINT_ADDRESS, CONTRACT_DEPLOYED } from "@/lib/contract";
 import { uploadTaskMetadata } from "@/lib/ipfs";
@@ -24,6 +24,7 @@ export const INITIAL_FORM: TaskFormState = {
  */
 export function useCreateTask() {
   const chainId = useChainId();
+  const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
 
   const [status, setStatus] = useState<TxStatus>("idle");
@@ -107,6 +108,12 @@ export function useCreateTask() {
         });
 
         setTxHash(hash);
+        setStatus("pending");
+
+        if (publicClient) {
+          await publicClient.waitForTransactionReceipt({ hash });
+        }
+
         setStatus("done");
         return hash;
       } catch (err: unknown) {
@@ -120,7 +127,7 @@ export function useCreateTask() {
         return null;
       }
     },
-    [writeContractAsync]
+    [writeContractAsync, publicClient]
   );
 
   const explorerUrl = txHash ? explorerTxUrl(chainId, txHash) : "";

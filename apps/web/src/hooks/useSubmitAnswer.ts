@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { useWriteContract } from "wagmi";
+import { useWriteContract, usePublicClient, useChainId } from "wagmi";
 import { SOLVEMINT_ABI, SOLVEMINT_ADDRESS } from "@/lib/contract";
+import { explorerTxUrl } from "@/constants";
 import type { TxStatus } from "@/types";
 
 /**
  * Handles a worker submitting an answer to a labeling task.
  */
 export function useSubmitAnswer() {
+  const chainId = useChainId();
+  const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
 
   const [status, setStatus] = useState<TxStatus>("idle");
@@ -14,7 +17,7 @@ export function useSubmitAnswer() {
   const [txHash, setTxHash] = useState("");
 
   async function submitAnswer(taskId: bigint, optionIndex: number) {
-    setStatus("pending");
+    setStatus("txn");
     setErrorMsg("");
 
     try {
@@ -24,7 +27,14 @@ export function useSubmitAnswer() {
         functionName: "submitAnswer",
         args: [taskId, optionIndex],
       });
+
       setTxHash(hash);
+      setStatus("pending");
+
+      if (publicClient) {
+        await publicClient.waitForTransactionReceipt({ hash });
+      }
+
       setStatus("done");
       return hash;
     } catch (err: unknown) {
@@ -41,5 +51,7 @@ export function useSubmitAnswer() {
     setTxHash("");
   }
 
-  return { submitAnswer, status, errorMsg, txHash, reset };
+  const explorerUrl = txHash ? explorerTxUrl(chainId, txHash) : "";
+
+  return { submitAnswer, status, errorMsg, txHash, explorerUrl, reset };
 }

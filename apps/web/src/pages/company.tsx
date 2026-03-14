@@ -29,7 +29,6 @@ export default function CompanyPage() {
     const hash = await createTask(form);
     if (hash) {
       setForm(INITIAL_FORM);
-      setView("posted");
     }
   }
 

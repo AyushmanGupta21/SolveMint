@@ -18,6 +18,7 @@ export function TaskCard({ task, onSolve }: TaskCardProps) {
 
   const badgeVariant = task.resolved ? "resolved" : isExpired ? "expired" : "open";
   const badgeLabel = task.resolved ? "Resolved" : isExpired ? "Expired" : "Open";
+  const taskPool = task.workersRequired * task.rewardPerWorker;
 
   return (
     <div className="glass-hover p-5 flex flex-col gap-3 animate-fade-in">
@@ -61,7 +62,7 @@ export function TaskCard({ task, onSolve }: TaskCardProps) {
         <div className="flex justify-between text-xs text-slate-500 mb-1">
           <span>{progress}/{required} workers</span>
           <span className="text-accent-400 font-semibold">
-            Pool: {formatEther(task.totalFunds)} ETH
+            Pool: {formatEther(taskPool)} ETH
           </span>
         </div>
         <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">

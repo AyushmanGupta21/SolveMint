@@ -33,6 +33,7 @@ export function PostedTaskCard({ task }: PostedTaskCardProps) {
   const progress = Number(task.submissionCount);
   const required = Number(task.workersRequired);
   const percentage = required > 0 ? Math.min(100, (progress / required) * 100) : 0;
+  const taskPool = task.workersRequired * task.rewardPerWorker;
 
   const badgeVariant = task.resolved ? "resolved" : isExpired ? "expired" : "open";
   const badgeText = task.resolved
@@ -71,8 +72,8 @@ export function PostedTaskCard({ task }: PostedTaskCardProps) {
 
       <div className="grid grid-cols-2 gap-3 text-xs">
         <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-          <p className="text-slate-500 mb-1">Locked Funds</p>
-          <p className="font-semibold text-white">{formatEther(task.totalFunds)} ETH</p>
+          <p className="text-slate-500 mb-1">Task Budget</p>
+          <p className="font-semibold text-white">{formatEther(taskPool)} ETH</p>
         </div>
         <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
           <p className="text-slate-500 mb-1">Base Escrow / Worker</p>

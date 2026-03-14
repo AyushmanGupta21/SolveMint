@@ -58,6 +58,27 @@ export function TaskSummaryPanel({
         )}
 
         {/* Status feedback */}
+        {(status === "txn" || status === "pending") && (
+          <StatusMessage variant="info" className="mt-4">
+            {status === "txn"
+              ? "Waiting for wallet confirmation. Please approve in MetaMask."
+              : txHash
+              ? (
+                <>
+                  Transaction submitted. Waiting for confirmation. {" "}
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    View on testnet explorer
+                  </a>
+                </>
+              )
+              : "Transaction submitted. Waiting for confirmation."}
+          </StatusMessage>
+        )}
         {status === "error" && (
           <StatusMessage variant="error" className="mt-4">
             {errorMsg}
@@ -83,6 +104,7 @@ export function TaskSummaryPanel({
           disabled={
             status === "uploading" ||
             status === "txn" ||
+            status === "pending" ||
             !form.question ||
             validOptions.length < 2 ||
             !workersValid
@@ -93,6 +115,8 @@ export function TaskSummaryPanel({
             ? "⏳ Uploading to IPFS…"
             : status === "txn"
             ? "⛓  Waiting for tx…"
+            : status === "pending"
+            ? "⏳ Confirming on chain…"
             : "🔒 Lock Funds & Deploy Task"}
         </button>
       </Card>

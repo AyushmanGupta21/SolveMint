@@ -13,7 +13,8 @@ interface SolveModalProps {
 
 export function SolveModal({ task, onClose }: SolveModalProps) {
   const [selected, setSelected] = useState<number | null>(null);
-  const { submitAnswer, status, errorMsg, txHash } = useSubmitAnswer();
+  const { submitAnswer, status, errorMsg, txHash, explorerUrl } = useSubmitAnswer();
+  const taskPool = task.workersRequired * task.rewardPerWorker;
 
   async function handleSubmit() {
     if (selected === null) return;
@@ -72,16 +73,36 @@ export function SolveModal({ task, onClose }: SolveModalProps) {
 
         {/* Reward info */}
         <p className="text-center text-accent-400 text-sm font-semibold">
-          Share from a {formatEther(task.totalFunds)} ETH pool if you match the majority ✓
+          Share from a {formatEther(taskPool)} ETH pool if you match the majority ✓
         </p>
 
         {/* Status feedback */}
+        {status === "txn" && (
+          <StatusMessage variant="info">
+            Waiting for wallet confirmation. Please approve in MetaMask.
+          </StatusMessage>
+        )}
+        {status === "pending" && (
+          <StatusMessage variant="info">
+            Transaction submitted. Waiting for confirmation. {" "}
+            {txHash && (
+              <a href={explorerUrl} target="_blank" rel="noreferrer" className="underline">
+                View on testnet explorer
+              </a>
+            )}
+          </StatusMessage>
+        )}
         {status === "error" && (
           <StatusMessage variant="error">{errorMsg}</StatusMessage>
         )}
         {status === "done" && (
           <StatusMessage variant="success">
-            ✅ Answer submitted! Tx: {txHash.slice(0, 14)}…
+            ✅ Answer confirmed! {" "}
+            {txHash && (
+              <a href={explorerUrl} target="_blank" rel="noreferrer" className="underline">
+                Tx: {txHash.slice(0, 14)}…
+              </a>
+            )}
           </StatusMessage>
         )}
 
@@ -92,10 +113,19 @@ export function SolveModal({ task, onClose }: SolveModalProps) {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={selected === null || status === "pending" || status === "done"}
+            disabled={
+              selected === null ||
+              status === "txn" ||
+              status === "pending" ||
+              status === "done"
+            }
             className="btn-primary flex-1"
           >
-            {status === "pending" ? "⛓ Submitting…" : "Submit Answer"}
+            {status === "txn"
+              ? "🦊 Confirm in wallet…"
+              : status === "pending"
+              ? "⏳ Confirming on chain…"
+              : "Submit Answer"}
           </button>
         </div>
       </div>
