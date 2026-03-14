@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 import { useWriteContract, useChainId } from "wagmi";
 import { parseEther } from "viem";
-import { SOLVEMINT_ABI, SOLVEMINT_ADDRESS } from "@/lib/contract";
+import { SOLVEMINT_ABI, SOLVEMINT_ADDRESS, CONTRACT_DEPLOYED } from "@/lib/contract";
 import { uploadTaskMetadata } from "@/lib/ipfs";
-import { explorerTxUrl, TASK_FORM_DEFAULTS } from "@/constants";
+import { CHAIN_IDS, explorerTxUrl, TASK_FORM_DEFAULTS } from "@/constants";
 import type { TaskFormState, TxStatus } from "@/types";
 
 export const INITIAL_FORM: TaskFormState = {
@@ -32,8 +32,31 @@ export function useCreateTask() {
 
   const createTask = useCallback(
     async (form: TaskFormState) => {
-      setStatus("uploading");
       setErrorMsg("");
+
+      // ── Pre-flight: contract must be deployed ─────────────────────────────
+      if (!CONTRACT_DEPLOYED) {
+        setErrorMsg(
+          "Contract not deployed yet. Run:\n" +
+          "  cd packages/contracts\n" +
+          "  npx hardhat run scripts/deploy.js --network celoSepolia\n" +
+          "Then paste the address into .env as NEXT_PUBLIC_SOLVEMINT_ADDRESS."
+        );
+        setStatus("error");
+        return null;
+      }
+
+      // ── Pre-flight: must be on Celo Sepolia ───────────────────────────────
+      if (chainId !== CHAIN_IDS.CELO_SEPOLIA) {
+        setErrorMsg(
+          `Wrong network (currently on chain ${chainId}). ` +
+          `Please switch MetaMask to Celo Sepolia (Chain ID ${CHAIN_IDS.CELO_SEPOLIA}) and try again.`
+        );
+        setStatus("error");
+        return null;
+      }
+
+      setStatus("uploading");
 
       try {
         const cid = await uploadTaskMetadata(
@@ -69,8 +92,12 @@ export function useCreateTask() {
         setStatus("done");
         return hash;
       } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        setErrorMsg(msg.split("\n")[0]);
+        // Extract the first meaningful line from viem / MetaMask errors.
+        // viem errors have a `.shortMessage` that is much more readable.
+        const shortMsg =
+          (err as { shortMessage?: string }).shortMessage ??
+          (err instanceof Error ? err.message : String(err));
+        setErrorMsg(shortMsg.split("\n")[0]);
         setStatus("error");
         return null;
       }

@@ -136,6 +136,15 @@ export const SOLVEMINT_ABI = [
   },
 ] as const;
 
-export const SOLVEMINT_ADDRESS =
-  (process.env.NEXT_PUBLIC_SOLVEMINT_ADDRESS as `0x${string}`) ||
-  "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Hardhat default deploy address
+// A real Ethereum address is exactly 0x + 40 hex characters.
+// The env placeholder "0xYourDeployedContractAddress" is NOT valid hex, so we
+// catch it early and fall back to the Hardhat localhost default.
+const _raw = process.env.NEXT_PUBLIC_SOLVEMINT_ADDRESS ?? "";
+const _isValidAddress = /^0x[0-9a-fA-F]{40}$/.test(_raw);
+
+/** True only when a real deployed address is present in the env. */
+export const CONTRACT_DEPLOYED = _isValidAddress;
+
+export const SOLVEMINT_ADDRESS: `0x${string}` = _isValidAddress
+  ? (_raw as `0x${string}`)
+  : "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Hardhat localhost default
