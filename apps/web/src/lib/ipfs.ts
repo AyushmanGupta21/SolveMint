@@ -34,23 +34,23 @@ function apiUrlPointsToLocalhost(url: string): boolean {
 }
 
 function resolveApiUrl(): string {
-  if (typeof window === "undefined") return RAW_API_URL;
+  if (typeof window === "undefined") return RAW_API_URL.replace(/\/$/, "");
 
   // Empty means same-origin API route (recommended for Vercel all-in-one deploy).
   if (!RAW_API_URL) return "";
 
-  const url = RAW_API_URL;
-
-  if (!runningOnLocalhost() && apiUrlPointsToLocalhost(url)) {
-    throw new Error(
-      "Production API URL is misconfigured. Set NEXT_PUBLIC_API_URL in Vercel to your deployed backend URL (not localhost)."
-    );
-  }
-
-  return url.replace(/\/$/, "");
+  return RAW_API_URL.replace(/\/$/, "");
 }
 
 const API_URL: string = resolveApiUrl();
+
+function ensureApiUrlConfiguredForRuntime(): void {
+  if (!runningOnLocalhost() && apiUrlPointsToLocalhost(API_URL)) {
+    throw new Error(
+      "Production API URL is misconfigured. Remove NEXT_PUBLIC_API_URL for same-origin Vercel API routes, or set it to a deployed backend URL (not localhost)."
+    );
+  }
+}
 
 const PRIMARY_GATEWAY: string =
   process.env.NEXT_PUBLIC_IPFS_GATEWAY ?? "https://gateway.pinata.cloud/ipfs";
@@ -85,6 +85,7 @@ export async function uploadTaskMetadata(
   metadata: TaskMetadata,
   file?: File
 ): Promise<string> {
+  ensureApiUrlConfiguredForRuntime();
   const allowLocalFallback = runningOnLocalhost() && !!RAW_API_URL;
 
   try {
@@ -166,6 +167,13 @@ export async function checkIpfsConnection(): Promise<{
   ok: boolean;
   message: string;
 }> {
+  try {
+    ensureApiUrlConfiguredForRuntime();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "API URL misconfigured";
+    return { ok: false, message };
+  }
+
   try {
     const res = await fetch(`${API_URL}/api/ipfs/test`);
     const data = await res.json();
