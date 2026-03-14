@@ -1,0 +1,24 @@
+{
+  "name": "solvemint",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "dev:web": "npm run dev -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "build": "npm run build -w apps/api && npm run build -w apps/web && npm run compile -w packages/contracts",
+    "compile:contracts": "npm run compile -w packages/contracts",
+    "deploy:amoy": "npm run deploy:amoy -w packages/contracts",
+    "deploy:sepolia": "npm run deploy:sepolia -w packages/contracts"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}
