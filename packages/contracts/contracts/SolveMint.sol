@@ -253,7 +253,7 @@ contract SolveMint {
             }
         }
 
-        // Pay winners
+        // Identify winners (workers who selected the majority option)
         address[] storage workers = _workers[taskId];
         uint256 winnersCount = 0;
 
@@ -262,22 +262,36 @@ contract SolveMint {
             // stored as 1-based; convert back to 0-based for comparison
             if (_submissions[taskId][w] - 1 == majority) {
                 winnersCount++;
-                (bool ok, ) = w.call{value: t.rewardPerWorker}("");
-                require(ok, "Payment failed");
             }
         }
 
-        // Refund company for any unsent funds
-        // (e.g. workers who chose wrong don't consume their slot's reward)
-        uint256 paid    = winnersCount * t.rewardPerWorker;
+        // No winners should be impossible once at least one submission exists,
+        // but guard anyway to avoid division by zero.
+        require(winnersCount > 0, "No winners");
+
+        // Distribute the FULL locked pool equally among majority winners.
+        // Any division remainder (dust) is refunded to the company.
+        uint256 rewardPerWinner = t.totalFunds / winnersCount;
+        uint256 paid = rewardPerWinner * winnersCount;
         uint256 leftover = t.totalFunds - paid;
+
+        // Effects first
         t.totalFunds = 0;
+
+        // Interactions
+        for (uint256 i = 0; i < workers.length; i++) {
+            address w = workers[i];
+            if (_submissions[taskId][w] - 1 == majority) {
+                (bool ok, ) = w.call{value: rewardPerWinner}("");
+                require(ok, "Payment failed");
+            }
+        }
 
         if (leftover > 0) {
             (bool ok, ) = t.company.call{value: leftover}("");
             require(ok, "Leftover refund failed");
         }
 
-        emit RewardsDistributed(taskId, majority, winnersCount, t.rewardPerWorker);
+        emit RewardsDistributed(taskId, majority, winnersCount, rewardPerWinner);
     }
 }
