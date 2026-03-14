@@ -56,6 +56,26 @@ export function useCreateTask() {
         return null;
       }
 
+      const workersCount = Math.max(3, Number.parseInt(form.workers || "0", 10) || 0);
+      const workers = BigInt(workersCount);
+
+      const totalBudgetWei = parseEther(form.reward || "0");
+      if (totalBudgetWei <= 0n) {
+        setErrorMsg("Total reward budget must be greater than 0 ETH.");
+        setStatus("error");
+        return null;
+      }
+
+      // Convert a fixed total budget into the contract's rewardPerWorker input.
+      const rewardWei = totalBudgetWei / workers;
+      if (rewardWei === 0n) {
+        setErrorMsg(
+          `Budget too small for ${workersCount} workers. Increase the budget or reduce workers (minimum 3).`
+        );
+        setStatus("error");
+        return null;
+      }
+
       setStatus("uploading");
 
       try {
@@ -70,9 +90,7 @@ export function useCreateTask() {
           form.imageFile ?? undefined
         );
 
-        const workers = BigInt(form.workers || "1");
-        const rewardWei = parseEther(form.reward || "0.001");
-        const totalWei = workers * rewardWei;
+        const totalWei = rewardWei * workers;
         const deadlineSecs = BigInt(
           Math.floor(Date.now() / 1000) + Number(form.hours) * 3600
         );

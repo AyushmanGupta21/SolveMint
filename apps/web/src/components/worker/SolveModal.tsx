@@ -72,7 +72,7 @@ export function SolveModal({ task, onClose }: SolveModalProps) {
 
         {/* Reward info */}
         <p className="text-center text-accent-400 text-sm font-semibold">
-          Earn {formatEther(task.rewardPerWorker)} ETH if you match the majority ✓
+          Share from a {formatEther(task.totalFunds)} ETH pool if you match the majority ✓
         </p>
 
         {/* Status feedback */}

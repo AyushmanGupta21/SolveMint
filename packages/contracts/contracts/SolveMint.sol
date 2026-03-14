@@ -110,7 +110,7 @@ contract SolveMint {
      * @notice Create a new labeling task and lock the reward escrow.
      * @param metadataCID  IPFS CID pointing to the task metadata JSON.
      * @param optionCount  Number of answer choices (2–10).
-     * @param workersRequired Number of workers needed to resolve.
+    * @param workersRequired Number of workers needed to resolve (minimum 3).
      * @param rewardPerWorker Reward in wei paid to each correct worker.
      * @param deadline     Unix timestamp after which the task can be refunded.
      */
@@ -122,7 +122,7 @@ contract SolveMint {
         uint256 deadline
     ) external payable returns (uint256 taskId) {
         if (optionCount < 2 || optionCount > 10)     revert InvalidOptions();
-        if (workersRequired == 0)                     revert InvalidWorkerCount();
+        if (workersRequired < 3)                      revert InvalidWorkerCount();
         if (rewardPerWorker == 0)                     revert InvalidReward();
         if (deadline <= block.timestamp)              revert InvalidDeadline();
 

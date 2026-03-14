@@ -75,7 +75,7 @@ export function PostedTaskCard({ task }: PostedTaskCardProps) {
           <p className="font-semibold text-white">{formatEther(task.totalFunds)} ETH</p>
         </div>
         <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-          <p className="text-slate-500 mb-1">Reward / Worker</p>
+          <p className="text-slate-500 mb-1">Base Escrow / Worker</p>
           <p className="font-semibold text-white">{formatEther(task.rewardPerWorker)} ETH</p>
         </div>
       </div>

@@ -146,14 +146,15 @@ export function TaskForm({ form, onChange }: TaskFormProps) {
           <label className="label">Workers Required</label>
           <input
             type="number"
-            min="1"
+            min="3"
             className="input-field"
             value={form.workers}
             onChange={(e) => set({ workers: e.target.value })}
           />
+          <p className="text-[11px] text-slate-500 mt-1">Minimum 3 workers.</p>
         </div>
         <div>
-          <label className="label">Reward / Worker (ETH)</label>
+          <label className="label">Total Reward Budget (ETH)</label>
           <input
             type="number"
             step="0.0001"
@@ -162,6 +163,9 @@ export function TaskForm({ form, onChange }: TaskFormProps) {
             value={form.reward}
             onChange={(e) => set({ reward: e.target.value })}
           />
+          <p className="text-[11px] text-slate-500 mt-1">
+            Fixed budget for this task. It is not multiplied by worker count.
+          </p>
         </div>
         <div>
           <label className="label">Deadline (hours)</label>

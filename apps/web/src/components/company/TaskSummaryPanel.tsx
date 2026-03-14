@@ -24,7 +24,10 @@ export function TaskSummaryPanel({
   address,
 }: TaskSummaryPanelProps) {
   const validOptions = form.options.filter(Boolean);
-  const totalEth = parseFloat(form.reward || "0") * parseFloat(form.workers || "0");
+  const workers = Number.parseInt(form.workers || "0", 10) || 0;
+  const totalEth = parseFloat(form.reward || "0") || 0;
+  const basePerWorker = workers > 0 ? totalEth / workers : 0;
+  const workersValid = workers >= 3;
 
   return (
     <div className="flex flex-col gap-5">
@@ -35,7 +38,8 @@ export function TaskSummaryPanel({
         </h2>
         <div className="space-y-3">
           <SummaryRow label="Workers" value={form.workers || "—"} />
-          <SummaryRow label="Reward each" value={`${form.reward || "0"} ETH`} />
+          <SummaryRow label="Total budget" value={`${totalEth.toFixed(4)} ETH`} />
+          <SummaryRow label="Base escrow / worker" value={`${basePerWorker.toFixed(4)} ETH`} />
           <SummaryRow label="Deadline" value={`${form.hours || "0"} hours`} />
           <SummaryRow label="Options" value={validOptions.length.toString()} />
           <div className="border-t border-white/10 pt-3">
@@ -46,6 +50,12 @@ export function TaskSummaryPanel({
             />
           </div>
         </div>
+
+        {!workersValid && (
+          <StatusMessage variant="error" className="mt-4">
+            Workers required must be at least 3.
+          </StatusMessage>
+        )}
 
         {/* Status feedback */}
         {status === "error" && (
@@ -74,7 +84,8 @@ export function TaskSummaryPanel({
             status === "uploading" ||
             status === "txn" ||
             !form.question ||
-            validOptions.length < 2
+            validOptions.length < 2 ||
+            !workersValid
           }
           className="btn-primary w-full mt-5"
         >
