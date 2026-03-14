@@ -1,108 +1,145 @@
 # SolveMint
 
-SolveMint is a decentralized AI data labeling prototype built for hackathons. Companies lock labeling rewards onchain, workers solve micro-tasks with their wallets, and the contract distributes payouts to workers who match the majority answer.
+> Decentralized AI data-labeling marketplace where companies lock rewards on-chain and workers earn by submitting answers.
 
-## Monorepo layout
+SolveMint is a beginner-friendly Web3 app that combines a modern frontend, lightweight backend, IPFS storage, and a Solidity smart contract.
 
-- `apps/web`: Next.js frontend for companies and workers.
-- `apps/api`: Express API for IPFS uploads through Pinata.
-- `packages/contracts`: Solidity smart contract and deployment scripts.
+## ✨ Project Description
 
-## System architecture
+In traditional labeling platforms, rewards and trust are controlled by a central platform.
 
-### 1. Frontend
+SolveMint removes that middle layer:
+- **Companies** create tasks and lock funds on-chain.
+- **Workers** answer tasks using their wallets.
+- **Smart contract** resolves results by majority vote.
+- **Winners** (workers who selected the majority option) are paid automatically.
 
-The frontend is a Next.js app using Tailwind CSS and `wagmi` for wallet connectivity. It has two main operating modes:
+Everything critical is transparent and verifiable on-chain.
 
-- Company dashboard: create a task, upload dataset content to IPFS, lock funds in the contract, and monitor progress.
-- Worker dashboard: browse open tasks, inspect the uploaded item, submit an answer, and track earnings.
+## 🚀 What It Does
 
-### 2. Backend
+1. Company creates a micro-labeling task (image or text).
+2. Task data is pinned to IPFS.
+3. Company locks funds while creating the task on-chain.
+4. Workers submit answers.
+5. Once required submissions are reached, majority answer is calculated.
+6. Locked pool is distributed equally among majority winners.
+7. If task expires before completion, company can receive refund.
 
-The Express API is intentionally thin. Its purpose is to:
+## ✅ Features
 
-- accept file uploads from the frontend,
-- pin files and JSON metadata to IPFS using Pinata,
-- keep Pinata credentials off the client.
+- **Company Dashboard**
+	- Create labeling tasks
+	- Lock reward funds on-chain
+	- Track posted task evolution and submission progress
 
-### 3. Smart contract
+- **Worker Dashboard**
+	- Browse open/resolved tasks
+	- Submit answers directly on-chain
+	- See reward-per-task context before submitting
 
-The Solidity contract handles the trust-sensitive flow:
+- **On-chain Trust Logic (SolveMint.sol)**
+	- Escrowed task funding
+	- One submission per worker per task
+	- Majority-based result resolution
+	- Equal payout distribution among majority winners
+	- Deadline-based refund path
 
-- task creation,
-- reward escrow,
-- worker submission tracking,
-- majority-answer resolution,
-- worker payouts,
-- deadline-based refunds.
+- **IPFS Integration**
+	- Stores task metadata/content off-chain
+	- Keeps large payloads out of smart contract storage
 
-### 4. Storage model
+- **Wallet + Testnet Ready**
+	- RainbowKit + Wagmi integration
+	- Configured for **Celo Sepolia** testnet
 
-For a hackathon prototype, each task represents one micro-labeling item. The dataset payload is stored in IPFS metadata with:
+## 🧱 Tech Stack
 
-- file CID or raw text,
-- prompt,
-- answer options,
-- display metadata for the frontend.
+- **Frontend:** Next.js, React, Tailwind CSS, Wagmi, RainbowKit, Viem
+- **Backend:** Node.js, Express, Multer, Pinata API
+- **Smart Contracts:** Solidity, Hardhat
+- **Storage:** IPFS (via Pinata)
+- **Network:** Celo Sepolia (testnet)
 
-That keeps heavy content off-chain while preserving a verifiable content address.
+## 📦 Monorepo Structure
 
-## End-to-end flow
+```text
+apps/
+	web/         # Next.js frontend (company + worker dashboards)
+	api/         # Express API for Pinata/IPFS uploads
+packages/
+	contracts/   # Solidity contract + Hardhat scripts
+```
 
-1. Company uploads an image or enters text.
-2. Frontend sends that content to the API.
-3. API pins the file and task metadata to IPFS.
-4. Frontend calls `createTask` on the contract and locks `workersRequired * rewardPerWorker`.
-5. Workers browse open tasks from contract state.
-6. Workers submit answers onchain.
-7. When enough answers arrive, the contract computes the majority option.
-8. Workers who selected the majority answer receive the fixed reward.
-9. Any leftover escrow is refunded to the company.
-10. If the deadline expires before enough responses, anyone can trigger a refund to the company.
+## 📍 Deployed Smart Contract
 
-## Local setup
+- **Network:** Celo Sepolia
+- **Contract:** `SolveMint`
+- **Address:** `0x03958F943C1Aa2B1c2E14F23c56449E61D058185`
+- **Explorer:** https://celo-sepolia.blockscout.com/address/0x03958F943C1Aa2B1c2E14F23c56449E61D058185
 
-1. Copy `.env.example` to `.env` and fill in the values.
-2. Install dependencies:
+> If you redeploy, update `NEXT_PUBLIC_SOLVEMINT_ADDRESS` in your env file.
+
+## 🛠️ Getting Started (Beginner Friendly)
+
+### 1) Prerequisites
+
+- Node.js `>=18.18.0`
+- MetaMask wallet
+- Celo Sepolia test CELO for transactions
+
+### 2) Install dependencies
 
 ```bash
 npm install
 ```
 
-3. Start the API and frontend:
+### 3) Configure environment
+
+Create/update these values in your env file:
+
+- `CELO_SEPOLIA_RPC_URL`
+- `NEXT_PUBLIC_SOLVEMINT_ADDRESS`
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_IPFS_GATEWAY`
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
+- `PINATA_JWT`
+- `PRIVATE_KEY` (testnet burner wallet only)
+
+### 4) Run app (API + Web)
 
 ```bash
 npm run dev
 ```
 
-4. Compile the contract:
+- Web: `http://localhost:3000`
+- API: `http://localhost:4000`
+
+### 5) Compile contracts
 
 ```bash
 npm run compile:contracts
 ```
 
-5. Deploy to Polygon Amoy:
+### 6) Deploy contract (if needed)
 
 ```bash
-npm run deploy:amoy
+cd packages/contracts
+npx hardhat run scripts/deploy.js --network celoSepolia
 ```
 
-6. Put the deployed contract address into `NEXT_PUBLIC_SOLVEMINT_ADDRESS` and restart the frontend.
+Then set the new address in `NEXT_PUBLIC_SOLVEMINT_ADDRESS` and restart the web app.
 
-## Contract deployment notes
+## 🔒 Notes
 
-- Fund the deployer wallet with testnet ETH or MATIC.
-- MetaMask should be connected to the same chain as the deployed contract.
-- Pinata JWT is required for IPFS uploads.
+- Use **testnet wallets only**.
+- Never commit real private keys for production use.
+- This project is built for learning, demos, and hackathon use.
 
-## Hackathon tradeoffs
+## 🌱 Future Improvements
 
-This prototype optimizes for speed and clarity over protocol complexity. It uses one task per dataset item, direct majority consensus, and onchain payout loops sized for small worker counts.
-
-## Recommended next improvements
-
-- batch tasks into campaigns,
-- add anti-sybil reputation or worker staking,
-- use an indexer for richer analytics,
-- support ERC-20 stablecoin rewards,
-- add dispute resolution for tied results.
+- Batch/campaign task management
+- Reputation and Sybil resistance
+- Better analytics/indexing
+- Stablecoin reward support
+- Tie/dispute handling logic
