@@ -13,10 +13,44 @@
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
-const API_URL: string =
-  typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000")
-    : "";
+const RAW_API_URL = process.env.NEXT_PUBLIC_API_URL?.trim() ?? "";
+
+function isLocalHostname(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+function runningOnLocalhost(): boolean {
+  if (typeof window === "undefined") return false;
+  return isLocalHostname(window.location.hostname);
+}
+
+function apiUrlPointsToLocalhost(url: string): boolean {
+  if (!url) return false;
+  try {
+    return isLocalHostname(new URL(url).hostname);
+  } catch {
+    return url.includes("localhost") || url.includes("127.0.0.1");
+  }
+}
+
+function resolveApiUrl(): string {
+  if (typeof window === "undefined") return RAW_API_URL;
+
+  // Empty means same-origin API route (recommended for Vercel all-in-one deploy).
+  if (!RAW_API_URL) return "";
+
+  const url = RAW_API_URL;
+
+  if (!runningOnLocalhost() && apiUrlPointsToLocalhost(url)) {
+    throw new Error(
+      "Production API URL is misconfigured. Set NEXT_PUBLIC_API_URL in Vercel to your deployed backend URL (not localhost)."
+    );
+  }
+
+  return url.replace(/\/$/, "");
+}
+
+const API_URL: string = resolveApiUrl();
 
 const PRIMARY_GATEWAY: string =
   process.env.NEXT_PUBLIC_IPFS_GATEWAY ?? "https://gateway.pinata.cloud/ipfs";
@@ -51,6 +85,8 @@ export async function uploadTaskMetadata(
   metadata: TaskMetadata,
   file?: File
 ): Promise<string> {
+  const allowLocalFallback = runningOnLocalhost() && !!RAW_API_URL;
+
   try {
     const formData = new FormData();
     formData.append("metadata", JSON.stringify(metadata));
@@ -65,6 +101,9 @@ export async function uploadTaskMetadata(
       const err = await res.json().catch(() => ({ error: res.statusText }));
       // If Pinata JWT is simply missing, let the caller know clearly
       if (res.status === 503) {
+        if (!allowLocalFallback) {
+          throw new Error("IPFS backend is not configured in production. Check PINATA_JWT on your API deployment.");
+        }
         console.warn("[IPFS] Pinata JWT not configured — using local fallback.");
         return buildLocalCid(metadata);
       }
@@ -74,7 +113,13 @@ export async function uploadTaskMetadata(
     const data = await res.json();
     return data.cid as string;
   } catch (err) {
-    // Network error or API down — degrade gracefully
+    if (!allowLocalFallback) {
+      throw err instanceof Error
+        ? err
+        : new Error("Upload failed: API is unreachable in production. Set NEXT_PUBLIC_API_URL to your deployed backend URL.");
+    }
+
+    // Network error or API down in local dev — degrade gracefully
     console.warn("[IPFS] API unreachable, using local fallback:", err);
     return buildLocalCid(metadata);
   }
