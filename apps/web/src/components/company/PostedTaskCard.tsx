@@ -91,11 +91,11 @@ const badgeVariant = task.resolved ? "resolved" : isExpired ? "expired" : isFill
       <div className="grid grid-cols-2 gap-4 text-[13px]">
         <div className="rounded-xl border border-white/5 bg-[#161616] p-4">
           <p className="text-[#888888] mb-1.5">Task Budget</p>
-          <p className="font-semibold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">{formatEthClean(taskPool)} ETH</p>
+          <p className="font-bold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">{formatEthClean(taskPool)} ETH</p>
         </div>
         <div className="rounded-xl border border-white/5 bg-[#161616] p-4">
           <p className="text-[#888888] mb-1.5">Base Escrow / Worker</p>
-          <p className="font-semibold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">{formatEthClean(task.rewardPerWorker)} ETH</p>
+          <p className="font-bold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">{formatEthClean(task.rewardPerWorker)} ETH</p>
         </div>
       </div>
 

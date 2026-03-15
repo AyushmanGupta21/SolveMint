@@ -29,7 +29,7 @@ export function SummaryRow({
   return (
     <div className="flex justify-between text-[14px]">
       <span className="text-[#888888]">{label}</span>
-      <span className={highlight ? "font-bold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]" : "text-[#e2e8f0] font-semibold"}>
+      <span className={value.includes('ETH') ? "font-bold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]" : highlight ? "font-bold text-[#e2e8f0]" : "text-[#e2e8f0] font-semibold"}>
         {value}
       </span>
     </div>

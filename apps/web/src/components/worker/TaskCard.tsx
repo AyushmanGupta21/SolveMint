@@ -61,7 +61,7 @@ export function TaskCard({ task, onSolve }: TaskCardProps) {
       <div>
         <div className="flex justify-between text-xs text-slate-500 mb-1">
           <span>{progress}/{required} workers</span>
-          <span className="text-accent-400 font-semibold">
+          <span className="font-bold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
             Pool: {formatEther(taskPool)} ETH
           </span>
         </div>

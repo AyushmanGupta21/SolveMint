@@ -72,7 +72,7 @@ export function SolveModal({ task, onClose }: SolveModalProps) {
         </div>
 
         {/* Reward info */}
-        <p className="text-center text-accent-400 text-sm font-semibold">
+        <p className="text-center text-sm font-bold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">
           Share from a {formatEther(taskPool)} ETH pool if you match the majority ✓
         </p>
 
