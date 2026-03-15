@@ -9,12 +9,17 @@
   },
   "dependencies": {
     "@rainbow-me/rainbowkit": "^2.1.3",
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
     "@tanstack/react-query": "^5.40.0",
+    "@types/three": "^0.183.1",
     "ethers": "^6.13.0",
     "formidable": "^3.5.4",
+    "framer-motion": "^12.36.0",
     "next": "14.2.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "three": "^0.183.2",
     "viem": "^2.13.0",
     "wagmi": "^2.10.0"
   },

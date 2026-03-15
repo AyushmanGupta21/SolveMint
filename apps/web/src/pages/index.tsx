@@ -1,16 +1,19 @@
 import Head from "next/head";
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Spotlight } from "@/components/ui/spotlight-new";
+import { FloatingTaskCards } from "@/components/ui/FloatingTaskCards";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState<'data-labeling' | 'ai-training' | 'crypto-rewards'>('data-labeling');
+  type TabId = 'data-labeling' | 'ai-training' | 'crypto-rewards';
+  const [activeTab, setActiveTab] = useState<TabId>('data-labeling');
 
-  const tabs = [
+  const tabs: { id: TabId; label: string }[] = [
     { id: 'data-labeling', label: 'Data Labeling' },
     { id: 'ai-training', label: 'AI Training' },
     { id: 'crypto-rewards', label: 'Crypto Rewards' },
-  ] as const;
+  ];
 
   const content = {
     'data-labeling': {
@@ -36,6 +39,18 @@ export default function Home() {
     }
   };
 
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setActiveTab((currentTab) => {
+        const currentIndex = tabs.findIndex(t => t.id === currentTab);
+        const nextIndex = (currentIndex + 1) % tabs.length;
+        return tabs[nextIndex].id;
+      });
+    }, 4000); // 4 seconds interval
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <>
       <Head>
@@ -46,9 +61,11 @@ export default function Home() {
         />
       </Head>
 
-      <div className="min-h-screen bg-[#111111] text-white font-sans flex flex-col">
+      <div className="min-h-screen bg-black/[0.96] antialiased relative overflow-hidden text-white font-sans flex flex-col">
+        <Spotlight />
+        
         {/* Navbar */}
-        <header className="flex justify-between items-center p-6">
+        <header className="relative z-50 flex justify-between items-center p-6">
           <div className="flex items-center">
             <img src="/solvemint-logo.png" alt="SolveMint" className="h-8" />
           </div>
@@ -101,7 +118,7 @@ export default function Home() {
         </header>
 
         {/* Hero Section */}
-        <main className="min-h-[85vh] flex flex-col justify-center px-10 md:px-24">
+        <main className="relative z-50 min-h-[85vh] flex flex-col justify-center px-10 md:px-24">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-8 font-sans">
               <span className="text-[#888888]">The </span>
@@ -120,7 +137,7 @@ export default function Home() {
 
             <div className="flex">
               <Link href="/signin">
-                <button className="group bg-white text-black font-semibold py-1.5 pl-5 pr-1.5 rounded-full flex items-center gap-3 hover:bg-gray-100 transition-colors shadow-lg">
+                <button className="group relative z-10 bg-white text-black font-semibold py-1.5 pl-5 pr-1.5 rounded-full flex items-center gap-3 hover:bg-gray-100 transition-colors shadow-lg">
                   <span className="text-[15px]">Connect Wallet</span>
                   <div className="bg-[#6B21A8] text-white p-2 rounded-full flex items-center justify-center group-hover:bg-[#581c87] transition-colors">
                     <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -131,10 +148,11 @@ export default function Home() {
               </Link>
             </div>
           </div>
-        </main>
-
-        {/* Features Tabs Section */}
-        <section className="py-24 px-10 md:px-24 flex flex-col items-center">
+          
+          {/* Animated Glassmorphism Floating Cards */}
+          <FloatingTaskCards />
+        </main>        {/* Features Tabs Section */}
+        <section className="relative z-50 py-24 px-10 md:px-24 flex flex-col items-center">
           {/* Tabs */}
           <div className="flex gap-12 md:gap-24 mb-20 text-sm md:text-base font-medium">
             {tabs.map(tab => (
@@ -160,7 +178,7 @@ export default function Home() {
                  <img 
                    src={content[activeTab].image}
                    alt={content[activeTab].title}
-                   className="w-full h-full object-cover object-center"
+                   className="w-full h-full object-cover object-center transition-opacity duration-500"
                    onError={(e) => {
                      (e.target as HTMLImageElement).style.visibility = 'hidden';
                      (e.target as HTMLImageElement).parentElement?.classList.add('border', 'border-white/5');
@@ -174,7 +192,7 @@ export default function Home() {
             </div>
 
             {/* Text Area */}
-            <div className="flex-1 flex flex-col justify-center w-full">
+            <div className="flex-1 flex flex-col justify-center w-full min-h-[300px]">
               <h2 className="text-2xl font-semibold text-white mb-3">
                 {content[activeTab].title}
               </h2>
@@ -187,7 +205,7 @@ export default function Home() {
               </h3>
               <ul className="text-[#BBBBBB] space-y-1 text-[15px]">
                 {content[activeTab].points.map((point, idx) => (
-                  <li key={idx}>{point}</li>
+                  <li key={idx}>{point.text || point}</li>
                 ))}
               </ul>
             </div>
