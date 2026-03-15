@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Head from "next/head";
-import Navbar from "@/components/layout/Navbar";
+import Link from "next/link";
 import { useAccount, useReadContract } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { SOLVEMINT_ABI, SOLVEMINT_ADDRESS } from "@/lib/contract";
 import { useSingleTask } from "@/hooks/useTasks";
 import { TaskCard } from "@/components/worker/TaskCard";
@@ -30,7 +31,7 @@ function TaskFetcher({
 export default function WorkerPage() {
   const { address, isConnected } = useAccount();
   const [activeTask, setActiveTask] = useState<TaskInfo | null>(null);
-  const [view, setView] = useState<"tasks" | "earnings">("tasks");
+  const [view, setView] = useState<"dashboard" | "tasks" | "earnings">("dashboard");
 
   const { data: taskCount } = useReadContract({
     address: SOLVEMINT_ADDRESS,
@@ -44,49 +45,108 @@ export default function WorkerPage() {
         <title>Worker Dashboard — SolveMint</title>
         <meta name="description" content="Browse labeling tasks and earn crypto rewards." />
       </Head>
-      <Navbar />
 
-      <main className="pt-20 min-h-screen">
-        <div className="max-w-5xl mx-auto px-6 py-10">
-          {/* Header */}
-          <div className="mb-8 animate-fade-in">
-            <h1 className="text-3xl font-extrabold text-white mb-2">Worker Dashboard</h1>
-            <p className="text-slate-400">Browse open tasks, submit answers, and earn on-chain rewards.</p>
-          </div>
+      <div className="min-h-screen bg-[#111111] text-white font-sans flex flex-col">
+        {/* Custom Navbar */}
+        <header className="flex justify-between items-center px-8 py-5 border-b border-white/5 bg-[#111111] sticky top-0 z-50">
+          <Link href="/">
+            <img src="/solvemint-logo.png" alt="SolveMint" className="h-8 cursor-pointer" />
+          </Link>
+          
+          <nav className="flex items-center gap-8 text-sm font-medium">
+            <button 
+              onClick={() => setView('tasks')} 
+              className={`transition-colors ${view === 'tasks' ? 'text-white' : 'text-[#BBBBBB] hover:text-white'}`}
+            >
+              Active Tasks
+            </button>
+            <button 
+              onClick={() => setView('earnings')} 
+              className={`transition-colors ${view === 'earnings' ? 'text-white' : 'text-[#BBBBBB] hover:text-white'}`}
+            >
+              Earning
+            </button>
+            <button 
+              onClick={() => setView('dashboard')} 
+              className={`transition-colors ${view === 'dashboard' ? 'text-white' : 'text-[#BBBBBB] hover:text-white'}`}
+            >
+              Dashboard
+            </button>
+          </nav>
 
+          <ConnectButton 
+            chainStatus={{ smallScreen: "none", largeScreen: "full" }} 
+            accountStatus="avatar" 
+            showBalance={false} 
+          />
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col">
           {!isConnected ? (
-            <div className="glass p-10 text-center">
-              <p className="text-2xl mb-2">🔗</p>
-              <p className="text-slate-300 text-lg font-semibold mb-1">Connect your wallet</p>
-              <p className="text-slate-500">Use the Connect Wallet button in the top-right.</p>
+            <div className="flex-1 w-full max-w-7xl mx-auto px-8 md:px-16 py-12">
+              <div className="mt-16 max-w-2xl">
+                <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] mb-6 font-sans">
+                  <span className="text-[#888888]">Solve </span>
+                  <span className="text-white">tasks, </span><br/>
+                  <span className="text-white">earn </span>
+                  <span className="text-[#888888]">crypto </span>
+                  <span className="text-white">rewards.</span>
+                </h1>
+
+                <p className="text-[#BBBBBB] text-base leading-relaxed mb-10 max-w-[500px]">
+                  Complete micro-tasks, label data for AI models, and earn precise cryptocurrency payouts directly to your wallet instantly.
+                </p>
+
+                <ConnectButton.Custom>
+                  {({ openConnectModal }) => (
+                    <button
+                      onClick={openConnectModal}
+                      className="bg-[#a855f7] hover:bg-[#9333ea] text-white font-semibold py-3 px-6 rounded-lg transition-colors text-sm"
+                    >
+                      Connect wallet
+                    </button>
+                  )}
+                </ConnectButton.Custom>
+              </div>
             </div>
           ) : (
-            <>
-              {/* Tabs */}
-              <div className="flex gap-2 mb-6">
-                {(["tasks", "earnings"] as const).map((tab) => (
+            <div className="flex-1 w-full max-w-7xl mx-auto px-8 md:px-16 py-12">
+              {view === "dashboard" && (
+                <div className="mt-16 max-w-2xl animate-fade-in">
+                  <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] mb-6 font-sans">
+                    <span className="text-[#888888]">Solve </span>
+                    <span className="text-white">tasks, </span><br/>
+                    <span className="text-white">earn </span>
+                    <span className="text-[#888888]">crypto </span>
+                    <span className="text-white">rewards.</span>
+                  </h1>
+
+                  <p className="text-[#BBBBBB] text-base leading-relaxed mb-10 max-w-[500px]">
+                    Complete micro-tasks, label data for AI models, and earn precise cryptocurrency payouts directly to your wallet instantly.
+                  </p>
+
                   <button
-                    key={tab}
-                    onClick={() => setView(tab)}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
-                      view === tab
-                        ? "bg-brand-600 text-white"
-                        : "bg-white/5 text-slate-400 hover:text-white"
-                    }`}
+                    onClick={() => setView('tasks')}
+                    className="bg-[#a855f7] hover:bg-[#9333ea] text-white font-semibold py-3 px-6 rounded-lg transition-colors text-sm"
                   >
-                    {tab === "tasks" ? "📋 Task Feed" : "💰 My Earnings"}
+                    Start Solving
                   </button>
-                ))}
-              </div>
+                </div>
+              )}
 
               {view === "tasks" && (
-                <>
+                <div className="animate-fade-in">
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-extrabold text-white mb-2">Active Tasks</h1>
+                    <p className="text-[#888888]">Browse open tasks, submit answers, and earn on-chain rewards.</p>
+                  </div>
                   {!taskCount || taskCount === 0n ? (
-                    <div className="glass p-10 text-center text-slate-500">
+                    <div className="bg-[#161616] border border-white/5 rounded-2xl p-10 text-center text-[#888888]">
                       No tasks yet. Check back soon or ask a company to post one!
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {Array.from({ length: Number(taskCount) }, (_, i) =>
                         BigInt(Number(taskCount) - i)
                       ).map((id) => (
@@ -94,14 +154,22 @@ export default function WorkerPage() {
                       ))}
                     </div>
                   )}
-                </>
+                </div>
               )}
 
-              {view === "earnings" && <EarningsDashboard address={address!} />}
-            </>
+              {view === "earnings" && (
+                 <div className="animate-fade-in">
+                   <div className="mb-8">
+                     <h1 className="text-3xl font-extrabold text-white mb-2">Your Earnings</h1>
+                     <p className="text-[#888888]">Track your completed tasks and claimable cryptocurrency.</p>
+                   </div>
+                   <EarningsDashboard address={address!} />
+                 </div>
+              )}
+            </div>
           )}
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* Solve modal */}
       {activeTask && (

@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import Head from "next/head";
-import Navbar from "@/components/layout/Navbar";
-import { useAccount, useReadContract } from "wagmi";
+import Link from "next/link";
+import { useAccount, useReadContract, useSwitchChain } from "wagmi";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useCreateTask, INITIAL_FORM } from "@/hooks/useCreateTask";
 import { useCompanyTasks } from "@/hooks/useTasks";
 import { TaskForm } from "@/components/company/TaskForm";
@@ -15,7 +16,7 @@ import type { TaskFormState } from "@/types";
 export default function CompanyPage() {
   const { address, isConnected } = useAccount();
   const [form, setForm] = useState<TaskFormState>(INITIAL_FORM);
-  const [view, setView] = useState<"create" | "posted">("create");
+  const [view, setView] = useState<"dashboard" | "create" | "posted">("dashboard");
   const { createTask, status, errorMsg, txHash, explorerUrl } = useCreateTask();
   const { tasks: companyTasks, loading: companyTasksLoading } = useCompanyTasks(address);
 
@@ -36,85 +37,119 @@ export default function CompanyPage() {
     <>
       <Head>
         <title>Company Dashboard — SolveMint</title>
-        <meta name="description" content="Create AI labeling tasks and lock rewards on-chain." />
+        <meta name="description" content="Create AI labeling tasks" />
       </Head>
-      <Navbar />
 
-      <main className="pt-20 min-h-screen">
-        <div className="max-w-5xl mx-auto px-6 py-10">
-          {/* Header */}
-          <div className="mb-10 animate-fade-in">
-            <h1 className="text-3xl font-extrabold text-white mb-2">Company Dashboard</h1>
-            <p className="text-slate-400">
-              Create micro-labeling tasks and lock rewards on-chain.
-              {taskCount !== undefined && (
-                <span className="ml-2 text-brand-400 font-medium">
-                  {taskCount.toString()} tasks deployed so far.
-                </span>
-              )}
-            </p>
-          </div>
+      <div className="min-h-screen bg-[#111111] text-white font-sans flex flex-col">
+        {/* Custom Navbar */}
+        <header className="flex justify-between items-center px-8 py-5 border-b border-white/5 bg-[#111111] sticky top-0 z-50">
+          <Link href="/">
+            <img src="/solvemint-logo.png" alt="SolveMint" className="h-8 cursor-pointer" />
+          </Link>
+          
+          <nav className="flex items-center gap-8 text-sm font-medium">
+            <button 
+              onClick={() => setView('create')} 
+              className={`transition-colors ${view === 'create' ? 'text-white' : 'text-[#BBBBBB] hover:text-white'}`}
+            >
+              Task Form
+            </button>
+            <button 
+              onClick={() => setView('posted')} 
+              className={`transition-colors ${view === 'posted' ? 'text-white' : 'text-[#BBBBBB] hover:text-white'}`}
+            >
+              Posted Tasks
+            </button>
+            <button 
+              onClick={() => setView('dashboard')} 
+              className={`transition-colors ${view === 'dashboard' ? 'text-white' : 'text-[#BBBBBB] hover:text-white'}`}
+            >
+              Dashboard
+            </button>
+          </nav>
 
+          <ConnectButton 
+            chainStatus={{ smallScreen: "none", largeScreen: "full" }} 
+            accountStatus="avatar" 
+            showBalance={false} 
+          />
+        </header>
+
+        {/* Main Content Area */}
+        <main className="flex-1 flex flex-col">
           {!isConnected ? (
-            <div className="glass p-10 text-center animate-fade-in">
-              <p className="text-2xl mb-2">🔗</p>
-              <p className="text-slate-300 text-lg font-semibold mb-1">Connect your wallet</p>
-              <p className="text-slate-500">Use the Connect Wallet button in the top-right corner.</p>
+            <div className="flex-1 flex items-center justify-center">
+              <div className="bg-[#1a1a1a] border border-white/10 p-10 rounded-2xl text-center max-w-sm">
+                <p className="text-2xl mb-4">🔗</p>
+                <p className="text-white text-xl font-semibold mb-2">Wallet Disconnected</p>
+                <p className="text-[#888888]">Please connect your wallet to access the Creator Dashboard.</p>
+              </div>
             </div>
           ) : (
-            <>
-              <div className="flex gap-2 mb-6">
-                {([
-                  { key: "create", label: "➕ Create Task" },
-                  { key: "posted", label: "📈 My Posted Tasks" },
-                ] as const).map((tab) => (
+            <div className="flex-1 w-full max-w-7xl mx-auto px-8 md:px-16 py-12">
+              {view === "dashboard" && (
+                <div className="mt-16 max-w-2xl">
+                  <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] mb-6 font-sans">
+                    <span className="text-[#888888]">Create </span>
+                    <span className="text-white">tasks, </span><br/>
+                    <span className="text-white">train </span>
+                    <span className="text-[#888888]">your </span>
+                    <span className="text-white">models.</span>
+                  </h1>
+
+                  <p className="text-[#BBBBBB] text-base leading-relaxed mb-10 max-w-[500px]">
+                    Upload datasets, set your own customized crypto rewards, and receive high-quality data annotations back from our decentralized workforce.
+                  </p>
+
                   <button
-                    key={tab.key}
-                    onClick={() => setView(tab.key)}
-                    className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-150 ${
-                      view === tab.key
-                        ? "bg-brand-600 text-white"
-                        : "bg-white/5 text-slate-400 hover:text-white"
-                    }`}
+                    onClick={() => setView('create')}
+                    className="bg-[#a855f7] hover:bg-[#9333ea] text-white font-semibold py-3 px-6 rounded-lg transition-colors text-sm"
                   >
-                    {tab.label}
+                    Add Tasks
                   </button>
-                ))}
-              </div>
+                </div>
+              )}
 
               {view === "create" && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 animate-slide-up">
-                  <div className="lg:col-span-3 glass p-6">
-                    <h2 className="font-bold text-white text-lg border-b border-white/10 pb-4 mb-6">
-                      New Task
-                    </h2>
-                    <TaskForm form={form} onChange={setForm} />
+                <div className="animate-fade-in">
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-extrabold text-white mb-2">Create Task</h1>
+                    <p className="text-[#888888]">Deploy new labeling tasks to the network.</p>
                   </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+                    <div className="lg:col-span-3 bg-[#161616] border border-white/5 rounded-2xl p-8">
+                      <TaskForm form={form} onChange={setForm} />
+                    </div>
 
-                  <div className="lg:col-span-2">
-                    <TaskSummaryPanel
-                      form={form}
-                      status={status}
-                      errorMsg={errorMsg}
-                      txHash={txHash}
-                      explorerUrl={explorerUrl}
-                      onSubmit={handleSubmit}
-                      address={address!}
-                    />
+                    <div className="lg:col-span-2">
+                      <TaskSummaryPanel
+                        form={form}
+                        status={status}
+                        errorMsg={errorMsg}
+                        txHash={txHash}
+                        explorerUrl={explorerUrl}
+                        onSubmit={handleSubmit}
+                        address={address!}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
 
               {view === "posted" && (
-                <div className="animate-slide-up">
+                <div className="animate-fade-in">
+                  <div className="mb-8">
+                    <h1 className="text-3xl font-extrabold text-white mb-2">Posted Tasks</h1>
+                    <p className="text-[#888888]">Manage and view the status of your tasks.</p>
+                  </div>
                   {companyTasksLoading ? (
-                    <div className="glass p-10 text-center text-slate-400">Loading your tasks…</div>
+                    <div className="bg-[#161616] border border-white/5 rounded-2xl p-10 text-center text-slate-400">Loading your tasks…</div>
                   ) : companyTasks.length === 0 ? (
-                    <div className="glass p-10 text-center text-slate-500">
+                    <div className="bg-[#161616] border border-white/5 rounded-2xl p-10 text-center text-[#888888]">
                       You haven&apos;t posted any tasks yet. Create one to start tracking progress here.
                     </div>
                   ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {companyTasks.map((task) => (
                         <PostedTaskCard key={task.id.toString()} task={task} />
                       ))}
@@ -122,10 +157,10 @@ export default function CompanyPage() {
                   )}
                 </div>
               )}
-            </>
+            </div>
           )}
-        </div>
-      </main>
+        </main>
+      </div>
     </>
   );
 }
