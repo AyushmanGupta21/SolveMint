@@ -75,8 +75,8 @@ packages/
 
 - **Network:** Celo Sepolia
 - **Contract:** `SolveMint`
-- **Address:** `0x03958F943C1Aa2B1c2E14F23c56449E61D058185`
-- **Explorer:** https://celo-sepolia.blockscout.com/address/0x03958F943C1Aa2B1c2E14F23c56449E61D058185
+- **Address:** `0x65fb53CC36d5F5f3B5D2a431ea7AF51c7a844C8B`
+- **Explorer:** https://celo-sepolia.blockscout.com/address/0x65fb53CC36d5F5f3B5D2a431ea7AF51c7a844C8B
 
 > If you redeploy, update `NEXT_PUBLIC_SOLVEMINT_ADDRESS` in your env file.
 
