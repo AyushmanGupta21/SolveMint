@@ -39,6 +39,12 @@ function resolveApiUrl(): string {
   // Empty means same-origin API route (recommended for Vercel all-in-one deploy).
   if (!RAW_API_URL) return "";
 
+  // In production, if someone accidentally configured localhost as API URL,
+  // gracefully fall back to same-origin routes instead of hard failing.
+  if (!runningOnLocalhost() && apiUrlPointsToLocalhost(RAW_API_URL)) {
+    return "";
+  }
+
   return RAW_API_URL.replace(/\/$/, "");
 }
 
