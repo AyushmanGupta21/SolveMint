@@ -3,10 +3,10 @@ import React from "react";
 type BadgeVariant = "open" | "resolved" | "expired" | "testnet";
 
 const VARIANT_CLASSES: Record<BadgeVariant, string> = {
-  open: "bg-emerald-500/20 text-emerald-400",
-  resolved: "bg-brand-500/20 text-brand-400",
-  expired: "bg-red-500/20 text-red-400",
-  testnet: "bg-amber-500/10 border border-amber-500/30 text-amber-400",
+  open: "bg-[#064e3b]/40 text-[#34d399] border border-[#064e3b]",
+  resolved: "bg-[#4c1d95]/40 text-[#a78bfa] border border-[#4c1d95]",
+  expired: "bg-[#7f1d1d]/40 text-[#f87171] border border-[#7f1d1d]",
+  testnet: "bg-[#78350f]/40 text-[#fbbf24] border border-[#78350f]",
 };
 
 interface BadgeProps {

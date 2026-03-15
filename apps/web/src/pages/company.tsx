@@ -86,7 +86,7 @@ export default function CompanyPage() {
               </div>
             </div>
           ) : (
-            <div className="flex-1 w-full max-w-7xl mx-auto px-8 md:px-16 py-12">
+            <div className="flex-1 w-full max-w-7xl mx-auto px-8 md:px-16 py-6">
               {view === "dashboard" && (
                 <div className="mt-16 max-w-2xl">
                   <h1 className="text-5xl md:text-6xl font-bold leading-[1.1] mb-6 font-sans">
@@ -112,13 +112,16 @@ export default function CompanyPage() {
 
               {view === "create" && (
                 <div className="animate-fade-in">
-                  <div className="mb-8">
-                    <h1 className="text-3xl font-extrabold text-white mb-2">Create Task</h1>
-                    <p className="text-[#888888]">Deploy new labeling tasks to the network.</p>
+                  <div className="mb-5">
+                    <h1 className="text-[28px] font-bold text-white mb-1.5 tracking-tight">Create Task</h1>
+                    <p className="text-[#888888] text-[14px]">Deploy new labeling tasks to the network.</p>
                   </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                    <div className="lg:col-span-3 bg-[#161616] border border-white/5 rounded-2xl p-8">
-                      <TaskForm form={form} onChange={setForm} />
+                  <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                    <div className="relative z-0 lg:col-span-3 group">
+                      <div className="absolute -inset-px bg-gradient-to-r from-[#a855f7] via-[#c084fc] to-[#a855f7] rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition duration-500 -z-10"></div>
+                      <div className="relative z-10 bg-[#1c1c1c] border border-white/10 rounded-2xl p-6 h-full">
+                        <TaskForm form={form} onChange={setForm} />
+                      </div>
                     </div>
 
                     <div className="lg:col-span-2">
@@ -138,9 +141,9 @@ export default function CompanyPage() {
 
               {view === "posted" && (
                 <div className="animate-fade-in">
-                  <div className="mb-8">
-                    <h1 className="text-3xl font-extrabold text-white mb-2">Posted Tasks</h1>
-                    <p className="text-[#888888]">Manage and view the status of your tasks.</p>
+                  <div className="mb-5">
+                    <h1 className="text-[28px] font-bold text-white mb-1.5 tracking-tight">Posted Tasks</h1>
+                    <p className="text-[#888888] text-[14px]">Manage and view the status of your tasks.</p>
                   </div>
                   {companyTasksLoading ? (
                     <div className="bg-[#161616] border border-white/5 rounded-2xl p-10 text-center text-slate-400">Loading your tasks…</div>

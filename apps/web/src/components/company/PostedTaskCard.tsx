@@ -1,7 +1,6 @@
 "use client";
 
 import { formatEther } from "viem";
-import { Badge } from "@/components/ui/Badge";
 import type { TaskInfo } from "@/types";
 
 interface PostedTaskCardProps {
@@ -34,66 +33,86 @@ export function PostedTaskCard({ task }: PostedTaskCardProps) {
   const required = Number(task.workersRequired);
   const percentage = required > 0 ? Math.min(100, (progress / required) * 100) : 0;
   const taskPool = task.workersRequired * task.rewardPerWorker;
+  const formatEthClean = (val: bigint) => {
+    const num = Number.parseFloat(formatEther(val));
+    return Number.isInteger(num) ? num.toString() : num.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+  };
 
-  const badgeVariant = task.resolved ? "resolved" : isExpired ? "expired" : "open";
-  const badgeText = task.resolved
-    ? "Resolved"
+const badgeVariant = task.resolved ? "resolved" : isExpired ? "expired" : isFilled ? "completed" : "open";
+  const badgeText = task.resolved || isFilled
+    ? "Completed"
     : isExpired
     ? "Expired"
-    : isFilled
-    ? "Ready to Resolve"
-    : "Collecting Answers";
+    : "In Progress";
 
   return (
-    <div className="glass-hover p-5 flex flex-col gap-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs text-slate-500 mb-1">Task #{task.id.toString()}</p>
-          <p className="font-semibold text-white text-sm line-clamp-2">
-            {task.metadata?.question ?? "Question metadata loading…"}
-          </p>
-        </div>
-        <Badge variant={badgeVariant}>{badgeText}</Badge>
+    <div className="relative z-0 group h-full">
+      <div className="absolute -inset-px bg-gradient-to-r from-[#a855f7] via-[#c084fc] to-[#a855f7] rounded-2xl blur-lg opacity-20 group-hover:opacity-40 transition duration-500 -z-10"></div>
+      <div className="relative z-10 bg-[#1c1c1c] border border-white/5 hover:border-white/10 transition-all rounded-2xl p-6 flex flex-col gap-5 h-full">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-[#888888] text-[13px] font-medium tracking-wide mb-1">Task #{task.id.toString()}</p>
+            <p className="font-semibold text-white text-[15px] line-clamp-2 leading-snug">
+              {task.metadata?.question ?? "Question metadata loading…"}
+            </p>
+          </div>
+          <div className="relative overflow-hidden rounded-full border border-white/10 bg-[#0f0f0f] px-3 py-1 flex items-center min-w-[max-content]">
+            {(badgeVariant === "open" || badgeVariant === "completed" || badgeVariant === "resolved") && (
+              <div
+                className="absolute left-0 top-0 bottom-0 bg-gradient-to-r from-[#9333ea] to-[#a855f7] transition-all duration-500"
+                style={{ width: `${percentage}%` }}
+              />
+            )}
+            {badgeVariant === "expired" && (
+              <div className="absolute left-0 top-0 bottom-0 bg-red-500/20 w-full" />
+            )}
+            <span className="relative z-10 text-[11px] font-bold text-white tracking-widest uppercase drop-shadow-md">
+              {badgeText}
+            </span>
+          </div>
       </div>
 
       {task.metadata?.contentType === "image" && task.metadata.contentUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={task.metadata.contentUrl}
-          alt="task content"
-          className="rounded-lg h-28 w-full object-cover border border-white/10"
-        />
+        <div className="relative rounded-xl overflow-hidden h-32 w-full border border-white/5 bg-[#0f0f0f]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={task.metadata.contentUrl}
+            alt="task content"
+            className="w-full h-full object-cover"
+          />
+        </div>
       )}
       {task.metadata?.contentType === "text" && task.metadata.contentText && (
-        <p className="text-slate-400 text-xs bg-white/[0.03] rounded-lg p-3 line-clamp-3">
+        <p className="text-[#BBBBBB] text-[13px] bg-[#0f0f0f] border border-white/5 rounded-xl p-4 line-clamp-3">
           {task.metadata.contentText}
         </p>
       )}
 
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-          <p className="text-slate-500 mb-1">Task Budget</p>
-          <p className="font-semibold text-white">{formatEther(taskPool)} ETH</p>
+      <div className="grid grid-cols-2 gap-4 text-[13px]">
+        <div className="rounded-xl border border-white/5 bg-[#161616] p-4">
+          <p className="text-[#888888] mb-1.5">Task Budget</p>
+          <p className="font-semibold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">{formatEthClean(taskPool)} ETH</p>
         </div>
-        <div className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
-          <p className="text-slate-500 mb-1">Base Escrow / Worker</p>
-          <p className="font-semibold text-white">{formatEther(task.rewardPerWorker)} ETH</p>
+        <div className="rounded-xl border border-white/5 bg-[#161616] p-4">
+          <p className="text-[#888888] mb-1.5">Base Escrow / Worker</p>
+          <p className="font-semibold bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] text-transparent bg-clip-text drop-shadow-[0_0_8px_rgba(168,85,247,0.6)]">{formatEthClean(task.rewardPerWorker)} ETH</p>
         </div>
       </div>
 
       <div>
-        <div className="flex justify-between text-xs text-slate-500 mb-1">
+        <div className="flex justify-between text-[13px] text-[#888888] mb-2 font-medium">
           <span>
             {progress}/{required} submissions
           </span>
-          <span className="text-slate-400">{formatDeadline(task.deadline)}</span>
+          <span className="text-[#BBBBBB]">{formatDeadline(task.deadline)}</span>
         </div>
-        <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+        <div className="h-2 bg-[#0f0f0f] border border-white/10 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-brand-500 to-accent-400 rounded-full transition-all duration-500"
+            className="h-full bg-gradient-to-r from-[#a855f7] to-[#e9d5ff] rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
             style={{ width: `${percentage}%` }}
           />
         </div>
+      </div>
       </div>
     </div>
   );
